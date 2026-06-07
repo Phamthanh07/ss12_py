@@ -1,8 +1,7 @@
 """
-Hệ Thống Quản Lý Giỏ Hàng AMAZON
+Hệ Thống Quản Lý Giỏ Hàng SHOPEE
 """
 
-# Dữ liệu ban đầu
 cart_items = [
     {"id": "P001", "name": "Dien thoai iPhone 15", "number": 1, "price": 25000000},
     {"id": "P002", "name": "Op lung Silicon", "number": 2, "price": 150000},
@@ -20,112 +19,112 @@ while True:
         "5. Thoát chương trình\n"
         "===================================================="
     )
+
     choice = input("Mời bạn chọn chức năng (1-5): ")
 
-    match (choice):
+    match choice:
+
+        # ======= XEM GIỎ HÀNG =======
         case "1":
             print("\n--- CHI TIẾT GIỎ HÀNG ---")
-            print(
-                f"{'STT':<5}| "
-                f"{'Mã SP':^6}| "
-                f"{'Tên Sản Phẩm':<25}| "
-                f"{'SL':^3}| "
-                f"{'Đơn giá':<15}| "
-                f"{'Thành tiền':<15}"
-            )
+            print(f"{'STT':<5}| {'Mã SP':^6}| {'Tên Sản Phẩm':<25}| {'SL':^3}| {'Đơn giá':<15}| {'Thành tiền':<15}")
             print("-" * 78)
+
             total_number = 0
             total_price = 0
+
             for i, item in enumerate(cart_items, start=1):
+                thanh_tien = item["number"] * item["price"]
                 total_number += item["number"]
-                total_price += item["number"] * item["price"]
+                total_price += thanh_tien
+
                 print(
                     f"{i:<5}| "
-                    f"{item["id"]:^6}| "
-                    f"{item["name"]:<25}| "
-                    f"{item["number"]:^3}| "
-                    f"{f"{item["price"]:,}đ":<15}| "
-                    f"{f"{item["number"] * item["price"]:,}đ":<15}"
+                    f"{item['id']:^6}| "
+                    f"{item['name']:<25}| "
+                    f"{item['number']:^3}| "
+                    f"{item['price']:,}đ{'':<7}| "
+                    f"{thanh_tien:,}đ"
                 )
+
             print("-" * 78)
-            print("=>Tổng số lượng sản phẩm trong giỏ:", total_number)
-            print(f"=>TỔNG TIỀN THANH TOÁN: {total_price:,}đ")
+            print("=> Tổng số lượng:", total_number)
+            print(f"=> Tổng tiền thanh toán: {total_price:,}đ")
+
+        # ======= THÊM / CỘNG DỒN =======
         case "2":
-            fool = True
-            index = -1
-            id = input("Mã sản phẩm: ").strip().upper()
+            id_sp = input("Mã sản phẩm: ").strip().upper()
 
-            for i, item in enumerate(cart_items, start=0):
-                if id == item["id"]:
-                    index = i
-                    fool = False
-                    break
+            # tìm sản phẩm
+            index = next((i for i, item in enumerate(cart_items) if item["id"] == id_sp), -1)
 
-            if fool is True:
-                name_item = input("Tên sản phẩm: ").strip()
             try:
-                check = True
                 quantity = int(input("Số lượng: "))
-                if fool is True:
-                    price = int(input("Đơn giá: "))
-                    if price <= 0:
-                        check = False
-                if quantity <= 0 or check is False:
-                    print("Số lượng/Giá không được âm")
+                if quantity <= 0:
+                    print("Số lượng phải > 0")
                     continue
             except ValueError:
-                print("Số lượng/Giá không được số")
+                print("Số lượng phải là số nguyên")
                 continue
 
-            if fool is True:
-                print("Chưa có đã thêm")
-                cart_items.append(
-                    {
-                        "id": id,
-                        "name": name_item,
-                        "number": quantity,
-                        "price": price,
-                    }
-                )
+            if index != -1:
+                cart_items[index]["number"] += quantity
+                print("Đã cộng thêm số lượng sản phẩm.")
             else:
-                if index != -1:
-                    print("Có rồi đã cộng thêm số lượng")
-                    cart_items[index]["number"] += quantity
-                else:
-                    print("Lỗi")
+                name = input("Tên sản phẩm: ").strip()
+
+                try:
+                    price = int(input("Đơn giá: "))
+                    if price <= 0:
+                        print("Giá phải > 0")
+                        continue
+                except ValueError:
+                    print("Giá phải là số nguyên")
+                    continue
+
+                cart_items.append({
+                    "id": id_sp,
+                    "name": name,
+                    "number": quantity,
+                    "price": price
+                })
+                print("Đã thêm sản phẩm mới.")
+
+        # ======= CẬP NHẬT =======
         case "3":
-            update_id = (
-                input("Nhập mã sản phẩm cần cập nhật số lượng: ").strip().upper()
-            )
-            product = next(
-                (item for item in cart_items if item["id"] == update_id), None
-            )
+            update_id = input("Nhập mã sản phẩm cần cập nhật: ").strip().upper()
+
+            product = next((item for item in cart_items if item["id"] == update_id), None)
 
             if product:
                 try:
-                    new_qty = int(input(f"Nhập số lượng mới cho {product['name']}: "))
+                    new_qty = int(input("Nhập số lượng mới: "))
                     if new_qty > 0:
                         product["number"] = new_qty
-                        print("Cập nhật số lượng thành công!")
+                        print("Cập nhật thành công")
                     else:
-                        print("Số lượng phải lớn hơn 0.")
+                        print("Số lượng phải > 0")
                 except ValueError:
-                    print("Số lượng phải là số nguyên!")
+                    print("Phải nhập số nguyên")
             else:
-                print("Mã sản phẩm không tồn tại trong giỏ hàng.")
+                print("Không tìm thấy sản phẩm")
+
+        # ======= XÓA =======
         case "4":
             delete_id = input("Nhập mã sản phẩm muốn xóa: ").strip().upper()
-            product = next(
-                (item for item in cart_items if item["id"] == delete_id), None
-            )
+
+            product = next((item for item in cart_items if item["id"] == delete_id), None)
 
             if product:
                 cart_items.remove(product)
-                print(f"Đã xóa sản phẩm {product['name']} khỏi giỏ hàng.")
+                print("Đã xóa sản phẩm khỏi giỏ hàng")
             else:
-                print("Không tìm thấy mã sản phẩm để xóa.")
+                print("Không tìm thấy sản phẩm")
+
+        # ======= THOÁT =======
         case "5":
-            print("\nĐã thoát chương trình")
+            print("Đã thoát chương trình")
             break
+
         case _:
-            print("\nLỗi. Vui lòng nhập (1-5)")
+            print("Lựa chọn không hợp lệ (1-5)")
